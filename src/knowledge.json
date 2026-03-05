@@ -1,0 +1,41 @@
+{
+  "profile": {
+    "name": "Abhishek Kalyan",
+    "current_role": "SPS Associate Advisor (Delivery Team Leader)",
+    "experience_years": 9,
+    "location": "Hyderabad, India"
+  },
+  "impact_summary": {
+    "agents_led": 186,
+    "escalations_managed": 12000,
+    "cost_savings_range": "$750,000 - $1M+",
+    "productivity_improvement": "20–30%",
+    "escalation_reduction": "30%",
+    "repeat_issue_reduction": "20%"
+  },
+  "projects": [
+    {
+      "name": "Project Velocity",
+      "impact": "35% backlog reduction, 27% response improvement, $280K savings"
+    },
+    {
+      "name": "Project Sigma",
+      "impact": "18% policy deviation reduction, $320K savings"
+    },
+    {
+      "name": "Project Nexus",
+      "impact": "30% onboarding reduction, $150K savings"
+    }
+  ],
+  "skills": [
+    "Team Leadership",
+    "Sprint Planning",
+    "Backlog Prioritization",
+    "KPI & SLA Management",
+    "SQL Querying",
+    "Power BI",
+    "AWS Console Tools",
+    "Lean Six Sigma Yellow Belt"
+  ],
+  "education": "B.Sc Computer Science (2013–2016)"
+}

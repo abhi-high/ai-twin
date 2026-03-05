@@ -65,6 +65,10 @@ If information is not in the above data, say:
 "I do not have that information available."
 `;
 
+app.get("/", (req, res) => {
+  res.send("AI Twin API running");
+});
+
 app.post("/chat", async (req, res) => {
   try {
     const completion = await groq.chat.completions.create({

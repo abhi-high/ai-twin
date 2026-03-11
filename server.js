@@ -4,129 +4,83 @@ const express = require("express")
 const cors = require("cors")
 const Groq = require("groq-sdk")
 const fs = require("fs")
+const natural = require("natural")
 
 const app = express()
 app.use(cors())
 app.use(express.json())
 
+const tokenizer = new natural.WordTokenizer()
+
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 })
 
-/*
-LOAD KNOWLEDGE
-*/
+/* LOAD DOCUMENTS */
 
-const knowledge = JSON.parse(
-  fs.readFileSync("./src/knowledge.json", "utf8")
+const documents = JSON.parse(
+  fs.readFileSync("./src/documents.json", "utf8")
 )
 
-/*
-TRACK QUESTION COUNT
-*/
+/* TFIDF MODEL */
 
-let questionCount = 0
+const TfIdf = natural.TfIdf
+const tfidf = new TfIdf()
 
-/*
-BUILD CONTEXT
-*/
-
-function buildContext(includeFunFact) {
-
-  let context = `
-You are the AI assistant representing Abhishek Kalyan.
-
-Answer ONLY using the knowledge provided.
-
-PROFILE
-Name: ${knowledge.profile.name}
-Role: ${knowledge.profile.role}
-Company: ${knowledge.profile.company}
-Location: ${knowledge.profile.location}
-Experience: ${knowledge.profile.experience}
-
-CAREER PROGRESSION
-${knowledge.career_progression.join(" → ")}
-
-LEADERSHIP EXPERIENCE
-Supports ${knowledge.leadership_experience.associates_supported} associates
-Mentored ${knowledge.leadership_experience.mentored_associates_per_year} associates per year
-Interviewed and onboarded ${knowledge.leadership_experience.associates_interviewed} associates
-
-IMPACT METRICS
-Escalation Reduction: ${knowledge.impact_metrics.escalation_reduction}
-Repeat Issue Reduction: ${knowledge.impact_metrics.repeat_issue_reduction}
-Audit Improvement: ${knowledge.impact_metrics.audit_adherence_improvement}
-Carry Forward Reduction: ${knowledge.impact_metrics.carry_forward_work_reduction}
-
-OPERATIONS EXPERIENCE
-${knowledge.operations_experience.join("\n")}
-
-PROJECTS
-${knowledge.projects.map(p => `${p.name}: ${p.description}`).join("\n")}
-
-SKILLS
-${knowledge.skills.join(", ")}
-
-EDUCATION
-${knowledge.education.degree} – ${knowledge.education.university}
-
-LANGUAGES
-${knowledge.languages.join(", ")}
-
-If a question is unrelated to Abhishek's professional background, politely explain that you can only answer questions about his experience and career.
-`
-
-  if (includeFunFact) {
-    const randomFact = knowledge.fun_facts[
-      Math.floor(Math.random() * knowledge.fun_facts.length)
-    ]
-
-    context += `
-
-After answering the question, add this leadership fun fact:
-
-"${randomFact}"
-`
-  } else {
-    context += `
-
-After answering normally, encourage the user to ask more questions by saying:
-
-"Ask a few more questions to unlock a leadership fun fact about Abhishek."
-`
-  }
-
-  return context
-}
-
-/*
-ROOT
-*/
-
-app.get("/", (req, res) => {
-  res.send("AI Twin Backend Running")
+documents.forEach(doc => {
+  tfidf.addDocument(doc.text)
 })
 
-/*
-CHAT
-*/
+/* FIND RELEVANT CONTEXT */
 
-app.post("/chat", async (req, res) => {
+function retrieveRelevantDocs(query) {
 
-  try {
+  let scores = []
 
-    questionCount++
+  tfidf.tfidfs(query, function(i, measure) {
+    scores.push({
+      index: i,
+      score: measure
+    })
+  })
 
-    const includeFunFact = questionCount % 3 === 0
+  scores.sort((a,b) => b.score - a.score)
 
-    const context = buildContext(includeFunFact)
+  const topDocs = scores.slice(0,3).map(s => documents[s.index].text)
+
+  return topDocs.join("\n")
+}
+
+/* CHAT ROUTE */
+
+app.post("/chat", async (req,res)=>{
+
+  try{
+
+    const userMessage = req.body.message
+
+    const context = retrieveRelevantDocs(userMessage)
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        { role: "system", content: context },
-        { role: "user", content: req.body.message }
+
+      model:"llama-3.3-70b-versatile",
+
+      messages:[
+        {
+          role:"system",
+          content:`You are an AI assistant answering questions about Abhishek Kalyan.
+
+Use the context below to answer.
+
+${context}
+
+If information is missing, say you don't have that information.`
+        },
+
+        {
+          role:"user",
+          content:userMessage
+        }
       ]
     })
 
@@ -134,18 +88,26 @@ app.post("/chat", async (req, res) => {
       reply: completion.choices[0].message.content
     })
 
-  } catch (error) {
+  }
+
+  catch(error){
 
     console.error(error)
 
     res.json({
-      reply: "Server error occurred."
+      reply:"Server error occurred."
     })
+
   }
+
+})
+
+app.get("/", (req,res)=>{
+  res.send("AI Twin RAG Backend Running")
 })
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT, () => {
-  console.log("AI Server running on port", PORT)
+app.listen(PORT, ()=>{
+  console.log("Server running on port",PORT)
 })

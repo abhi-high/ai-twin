@@ -4,123 +4,151 @@ const express = require("express")
 const cors = require("cors")
 const Groq = require("groq-sdk")
 const fs = require("fs")
-const natural = require("natural")
+
+const use = require("@tensorflow-models/universal-sentence-encoder")
+require("@tensorflow/tfjs-node")
+
+const cosine = require("cosine-similarity")
 
 const app = express()
 app.use(cors())
 app.use(express.json())
 
-const tokenizer = new natural.WordTokenizer()
-
 const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
+ apiKey: process.env.GROQ_API_KEY
 })
 
 /* LOAD DOCUMENTS */
 
 const documents = JSON.parse(
-  fs.readFileSync("./src/documents.json", "utf8")
+ fs.readFileSync("./src/documents.json","utf8")
 )
 
-/* TFIDF MODEL */
+let embeddings = []
+let model
 
-const TfIdf = natural.TfIdf
-const tfidf = new TfIdf()
+/* LOAD EMBEDDING MODEL */
 
-documents.forEach(doc => {
-  tfidf.addDocument(doc.text)
-})
+async function loadModel(){
 
-/* FIND RELEVANT CONTEXT */
+ model = await use.load()
 
-function retrieveRelevantDocs(query) {
+ const texts = documents.map(d => d.text)
 
-  query = query.toLowerCase()
+ const vectors = await model.embed(texts)
 
-  let scores = []
+ embeddings = vectors.arraySync()
 
-  tfidf.tfidfs(query, function(i, measure) {
-    scores.push({
-      index: i,
-      score: measure
-    })
-  })
+ console.log("Embeddings loaded")
 
-  scores.sort((a,b)=> b.score - a.score)
+}
 
-  let selectedDocs = scores.slice(0,3).map(s => documents[s.index].text)
+loadModel()
 
-  /* Force include project docs if question about projects */
+/* SEMANTIC SEARCH */
 
-  if(query.includes("project")){
+async function retrieveDocs(query){
 
-    const projectDocs = documents
-      .filter(doc => doc.text.toLowerCase().includes("project"))
-      .map(doc => doc.text)
+ const queryEmbedding = await model.embed([query])
+ const queryVector = queryEmbedding.arraySync()[0]
 
-    selectedDocs = [...new Set([...selectedDocs, ...projectDocs])]
+ let scores = embeddings.map((vector,i)=>{
+
+  return {
+   index:i,
+   score: cosine(queryVector,vector)
   }
 
-  return selectedDocs.join("\n")
+ })
+
+ scores.sort((a,b)=>b.score-a.score)
+
+ const topDocs = scores.slice(0,4)
+ .map(s=>documents[s.index].text)
+
+ return topDocs.join("\n")
+
 }
+
+/* MEMORY */
+
+let conversationHistory = []
 
 /* CHAT ROUTE */
 
 app.post("/chat", async (req,res)=>{
 
-  try{
+ try{
 
-    const userMessage = req.body.message
+  const userMessage = req.body.message
 
-    const context = retrieveRelevantDocs(userMessage)
+  const context = await retrieveDocs(userMessage)
 
-    const completion = await groq.chat.completions.create({
+  conversationHistory.push({
+   role:"user",
+   content:userMessage
+  })
 
-      model:"llama-3.3-70b-versatile",
+  const completion = await groq.chat.completions.create({
 
-      messages:[
-        {
-          role:"system",
-          content:`You are an AI assistant answering questions about Abhishek Kalyan.
+   model:"llama-3.3-70b-versatile",
 
-Use the context below to answer.
+   messages:[
+
+    {
+     role:"system",
+     content:`You are an AI twin of Abhishek Kalyan.
+
+Use the knowledge context below.
 
 ${context}
 
-If information is missing, say you don't have that information.`
-        },
+If the user is a recruiter asking for summary or hiring evaluation, provide a concise professional response.
 
-        {
-          role:"user",
-          content:userMessage
-        }
-      ]
-    })
+Do not invent information.`
+    },
 
-    res.json({
-      reply: completion.choices[0].message.content
-    })
+    ...conversationHistory
 
+   ]
+
+  })
+
+  const reply = completion.choices[0].message.content
+
+  conversationHistory.push({
+   role:"assistant",
+   content:reply
+  })
+
+  if(conversationHistory.length > 10){
+   conversationHistory.shift()
   }
 
-  catch(error){
+  res.json({reply})
 
-    console.error(error)
+ }
 
-    res.json({
-      reply:"Server error occurred."
-    })
+ catch(err){
 
-  }
+  console.error(err)
+
+  res.json({reply:"Server error occurred."})
+
+ }
 
 })
 
-app.get("/", (req,res)=>{
-  res.send("AI Twin RAG Backend Running")
+app.get("/",(req,res)=>{
+
+ res.send("AI Twin Phase 3 Running")
+
 })
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT, ()=>{
-  console.log("Server running on port",PORT)
+app.listen(PORT,()=>{
+
+ console.log("Server running on",PORT)
+
 })

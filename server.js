@@ -35,6 +35,8 @@ documents.forEach(doc => {
 
 function retrieveRelevantDocs(query) {
 
+  query = query.toLowerCase()
+
   let scores = []
 
   tfidf.tfidfs(query, function(i, measure) {
@@ -44,11 +46,22 @@ function retrieveRelevantDocs(query) {
     })
   })
 
-  scores.sort((a,b) => b.score - a.score)
+  scores.sort((a,b)=> b.score - a.score)
 
-  const topDocs = scores.slice(0,3).map(s => documents[s.index].text)
+  let selectedDocs = scores.slice(0,3).map(s => documents[s.index].text)
 
-  return topDocs.join("\n")
+  /* Force include project docs if question about projects */
+
+  if(query.includes("project")){
+
+    const projectDocs = documents
+      .filter(doc => doc.text.toLowerCase().includes("project"))
+      .map(doc => doc.text)
+
+    selectedDocs = [...new Set([...selectedDocs, ...projectDocs])]
+  }
+
+  return selectedDocs.join("\n")
 }
 
 /* CHAT ROUTE */

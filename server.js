@@ -1,154 +1,82 @@
-require("dotenv").config()
+import express from "express";
+import cors from "cors";
+import Groq from "groq-sdk";
+import fs from "fs";
 
-const express = require("express")
-const cors = require("cors")
-const Groq = require("groq-sdk")
-const fs = require("fs")
+const app = express();
 
-const use = require("@tensorflow-models/universal-sentence-encoder")
-require("@tensorflow/tfjs-node")
-
-const cosine = require("cosine-similarity")
-
-const app = express()
-app.use(cors())
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 
 const groq = new Groq({
- apiKey: process.env.GROQ_API_KEY
-})
+  apiKey: process.env.GROQ_API_KEY
+});
 
-/* LOAD DOCUMENTS */
+// Load knowledge base
+const knowledge = JSON.parse(
+  fs.readFileSync("./src/knowledge.json", "utf-8")
+);
 
-const documents = JSON.parse(
- fs.readFileSync("./src/documents.json","utf8")
-)
+// Simple retrieval
+function retrieveContext(question) {
 
-let embeddings = []
-let model
+  const q = question.toLowerCase();
 
-/* LOAD EMBEDDING MODEL */
+  const docs = knowledge.filter(doc =>
+    doc.text.toLowerCase().includes(q.split(" ")[0])
+  );
 
-async function loadModel(){
-
- model = await use.load()
-
- const texts = documents.map(d => d.text)
-
- const vectors = await model.embed(texts)
-
- embeddings = vectors.arraySync()
-
- console.log("Embeddings loaded")
-
+  return docs.slice(0,3).map(d => d.text).join("\n");
 }
 
-loadModel()
+app.post("/chat", async (req, res) => {
 
-/* SEMANTIC SEARCH */
+  const userMessage = req.body.message;
 
-async function retrieveDocs(query){
+  const context = retrieveContext(userMessage);
 
- const queryEmbedding = await model.embed([query])
- const queryVector = queryEmbedding.arraySync()[0]
+  const prompt = `
+You are Abhishek Kalyan's AI Resume Assistant.
 
- let scores = embeddings.map((vector,i)=>{
+Use the following resume knowledge to answer recruiter questions.
 
-  return {
-   index:i,
-   score: cosine(queryVector,vector)
-  }
-
- })
-
- scores.sort((a,b)=>b.score-a.score)
-
- const topDocs = scores.slice(0,4)
- .map(s=>documents[s.index].text)
-
- return topDocs.join("\n")
-
-}
-
-/* MEMORY */
-
-let conversationHistory = []
-
-/* CHAT ROUTE */
-
-app.post("/chat", async (req,res)=>{
-
- try{
-
-  const userMessage = req.body.message
-
-  const context = await retrieveDocs(userMessage)
-
-  conversationHistory.push({
-   role:"user",
-   content:userMessage
-  })
-
-  const completion = await groq.chat.completions.create({
-
-   model:"llama-3.3-70b-versatile",
-
-   messages:[
-
-    {
-     role:"system",
-     content:`You are an AI twin of Abhishek Kalyan.
-
-Use the knowledge context below.
-
+Resume Knowledge:
 ${context}
 
-If the user is a recruiter asking for summary or hiring evaluation, provide a concise professional response.
+Recruiter Question:
+${userMessage}
+`;
 
-Do not invent information.`
-    },
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "system",
+        content: "You are an AI resume assistant helping recruiters learn about Abhishek Kalyan."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    stream: true
+  });
 
-    ...conversationHistory
+  res.setHeader("Content-Type", "text/plain");
 
-   ]
+  for await (const chunk of completion) {
 
-  })
+    const token = chunk.choices[0]?.delta?.content || "";
 
-  const reply = completion.choices[0].message.content
-
-  conversationHistory.push({
-   role:"assistant",
-   content:reply
-  })
-
-  if(conversationHistory.length > 10){
-   conversationHistory.shift()
+    res.write(token);
   }
 
-  res.json({reply})
+  res.end();
 
- }
+});
 
- catch(err){
+const PORT = 5000;
 
-  console.error(err)
-
-  res.json({reply:"Server error occurred."})
-
- }
-
-})
-
-app.get("/",(req,res)=>{
-
- res.send("AI Twin Phase 3 Running")
-
-})
-
-const PORT = process.env.PORT || 5000
-
-app.listen(PORT,()=>{
-
- console.log("Server running on",PORT)
-
-})
+app.listen(PORT, () => {
+  console.log(`AI Twin server running on port ${PORT}`);
+});

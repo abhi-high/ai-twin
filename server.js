@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import Groq from "groq-sdk";
+import semanticSearch from "./semanticSearch.js";
 
 const app = express();
 
@@ -16,18 +17,18 @@ const documents = JSON.parse(
   fs.readFileSync("./src/documents.json", "utf8")
 );
 
-function retrieveDocs(question) {
+const knowledge = JSON.parse(
+  fs.readFileSync("./src/knowledge.json", "utf8")
+);
 
-  const q = question.toLowerCase();
+let conversationHistory = [];
+let recruiterQuestions = 0;
 
-  const results = documents.filter(doc =>
-    q.includes(doc.topic)
-  );
-
-  if (results.length === 0) return documents.slice(0,3);
-
-  return results;
-}
+const funFacts = knowledge.funFacts || [
+  "Abhishek enjoys exploring AI tools and building automation systems.",
+  "He has experience leading operational improvements in high volume environments.",
+  "He is passionate about Agile and process optimization."
+];
 
 app.post("/chat", async (req, res) => {
 
@@ -35,26 +36,52 @@ app.post("/chat", async (req, res) => {
 
     const userMessage = req.body.message;
 
-    const docs = retrieveDocs(userMessage);
+    recruiterQuestions++;
 
-    const context = docs.map(d => d.text).join("\n");
+    const relevantDocs = await semanticSearch(userMessage);
+
+    const context = relevantDocs.join("\n");
+
+    const messages = [
+      {
+        role: "system",
+        content:
+          `You are the AI twin of Abhishek Kalyan.
+
+Speak professionally to recruiters.
+
+Answer questions based on resume information.
+
+Be concise, confident and recruiter-friendly.`
+      },
+      ...conversationHistory,
+      {
+        role: "user",
+        content: `Resume Context:\n${context}\n\nQuestion: ${userMessage}`
+      }
+    ];
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an AI resume assistant answering recruiter questions about Abhishek Kalyan."
-        },
-        {
-          role: "user",
-          content: `Use this resume information:\n${context}\n\nQuestion: ${userMessage}`
-        }
-      ]
+      messages
     });
 
-    const reply = completion.choices[0].message.content;
+    let reply = completion.choices[0].message.content;
+
+    conversationHistory.push({ role: "user", content: userMessage });
+    conversationHistory.push({ role: "assistant", content: reply });
+
+    if (conversationHistory.length > 10) {
+      conversationHistory = conversationHistory.slice(-10);
+    }
+
+    if (recruiterQuestions % 3 === 0) {
+
+      const fact =
+        funFacts[Math.floor(Math.random() * funFacts.length)];
+
+      reply += `\n\nFun fact: ${fact}`;
+    }
 
     res.json({ reply });
 
@@ -70,18 +97,19 @@ app.post("/chat", async (req, res) => {
 
 });
 
-app.post("/interview", (req,res)=>{
+app.post("/interview", (req, res) => {
 
   const questions = [
     "Tell me about a leadership challenge you handled.",
-    "How do you improve operational performance?",
+    "How did you improve operational performance at Amazon?",
     "Explain a project where you reduced backlog.",
-    "How do you mentor new associates?"
+    "How do you mentor new associates?",
+    "How do you use Agile practices in operations?"
   ];
 
-  const q = questions[Math.floor(Math.random()*questions.length)];
+  const q = questions[Math.floor(Math.random() * questions.length)];
 
-  res.json({question:q});
+  res.json({ question: q });
 
 });
 

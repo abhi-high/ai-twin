@@ -7,7 +7,7 @@ function App() {
   const [input, setInput] = useState("");
 
   // Backend API
-  const API_URL = "https://ai-twin-htep.onrender.com/chat";
+  const API_URL = "https://ai-twin-htep.onrender.com";
 
   const sendMessage = async (text) => {
 

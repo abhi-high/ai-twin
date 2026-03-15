@@ -12,90 +12,80 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 });
 
-const knowledge = JSON.parse(
-  fs.readFileSync("./src/knowledge.json", "utf8")
+const documents = JSON.parse(
+  fs.readFileSync("./src/documents.json", "utf8")
 );
 
-let messageCount = 0;
+function retrieveDocs(question) {
 
-function retrieveKnowledge(question) {
   const q = question.toLowerCase();
 
-  const results = knowledge.filter(k =>
-    q.includes(k.topic)
+  const results = documents.filter(doc =>
+    q.includes(doc.topic)
   );
 
-  return results.map(r => r.text).join("\n");
+  if (results.length === 0) return documents.slice(0,3);
+
+  return results;
 }
 
 app.post("/chat", async (req, res) => {
 
   try {
 
-    const { message, mode } = req.body;
+    const userMessage = req.body.message;
 
-    messageCount++;
+    const docs = retrieveDocs(userMessage);
 
-    const context = retrieveKnowledge(message);
-
-    if (!context) {
-      return res.json({
-        reply:
-          "I can only answer questions about Abhishek Kalyan's experience and career."
-      });
-    }
-
-    const prompt = `
-You are Abhishek Kalyan's AI resume assistant.
-
-Only answer using the provided knowledge.
-
-Knowledge:
-${context}
-
-Recruiter question:
-${message}
-`;
+    const context = docs.map(d => d.text).join("\n");
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
-        { role: "system", content: "You are an AI resume assistant." },
-        { role: "user", content: prompt }
+        {
+          role: "system",
+          content:
+            "You are an AI resume assistant answering recruiter questions about Abhishek Kalyan."
+        },
+        {
+          role: "user",
+          content: `Use this resume information:\n${context}\n\nQuestion: ${userMessage}`
+        }
       ]
     });
 
-    let reply = completion.choices[0].message.content;
-
-    if (messageCount === 3) {
-      const funFact = knowledge.find(k => k.topic === "funfact");
-      if (funFact) {
-        reply += "\n\n" + funFact.text;
-      }
-    }
+    const reply = completion.choices[0].message.content;
 
     res.json({ reply });
 
   } catch (error) {
+
     console.error(error);
-    res.status(500).json({ reply: "AI server error." });
+
+    res.status(500).json({
+      reply: "AI server error."
+    });
+
   }
+
 });
 
-app.post("/interview", async (req, res) => {
+app.post("/interview", (req,res)=>{
 
   const questions = [
-    "Tell me about a leadership challenge you faced.",
-    "How do you improve team performance?",
-    "Explain a project where you improved operational efficiency."
+    "Tell me about a leadership challenge you handled.",
+    "How do you improve operational performance?",
+    "Explain a project where you reduced backlog.",
+    "How do you mentor new associates?"
   ];
 
-  const q = questions[Math.floor(Math.random() * questions.length)];
+  const q = questions[Math.floor(Math.random()*questions.length)];
 
-  res.json({ question: q });
+  res.json({question:q});
+
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, () => {
   console.log("AI Twin backend running");

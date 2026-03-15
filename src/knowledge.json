@@ -4,7 +4,12 @@
     "role": "SPS Associate Advisor",
     "company": "Amazon Development Center Pvt Ltd",
     "location": "Hyderabad, India",
-    "experience": "9+ years in Customer Support and Operations Leadership"
+    "experience": "9+ years in Customer Support and Operations Leadership",
+    "education": {
+      "degree": "BSc Computer Science",
+      "university": "William Carey University",
+      "years": "2013–2016"
+    }
   },
 
   "career_progression": [
@@ -14,6 +19,7 @@
   ],
 
   "leadership_experience": {
+    "summary": "Abhishek has extensive leadership and mentoring experience within Amazon's SPS organization.",
     "associates_supported": 186,
     "onboarding_batches_supported": 26,
     "mentored_associates_per_year": "30–50",
@@ -21,6 +27,7 @@
   },
 
   "impact_metrics": {
+    "summary": "Abhishek consistently delivered operational improvements across multiple performance metrics.",
     "escalation_reduction": "30%",
     "repeat_issue_reduction": "20%",
     "audit_adherence_improvement": "20%",
@@ -30,30 +37,34 @@
   },
 
   "operations_experience": [
-    "Handled 40–60 customer cases daily while maintaining strict policy compliance",
-    "Maintained 99–100% quality score through SOP adherence",
-    "Handled more than 12,000 escalation contacts across calls, emails, and chats",
-    "Supported 95%+ SLA adherence during peak operational volumes",
-    "Worked with SQL and Power BI dashboards for operational reporting",
-    "Uses AWS console tools to monitor operational workflows"
+    "Handled 40–60 customer cases daily while maintaining strict policy compliance.",
+    "Maintained 99–100% quality score through SOP adherence.",
+    "Handled more than 12,000 escalation contacts across calls, emails, and chats.",
+    "Supported 95%+ SLA adherence during peak operational volumes.",
+    "Worked with SQL and Power BI dashboards for operational reporting and operational performance monitoring.",
+    "Used AWS console tools to monitor operational workflows and troubleshoot system issues."
   ],
 
   "projects": [
     {
       "name": "Project Velocity",
-      "description": "Reduced operational backlog by 35 percent and delivered approximately $280K in cost savings through workflow optimization and backlog management improvements."
+      "impact": "Reduced operational backlog by 35 percent and delivered approximately $280K in cost savings.",
+      "details": "Focused on workflow optimization, backlog management improvements, and operational efficiency."
     },
     {
       "name": "Project Sigma",
-      "description": "Reduced policy deviation rates by 18 percent, improving operational consistency and generating approximately $320K in savings."
+      "impact": "Reduced policy deviation rates by 18 percent and generated approximately $320K in savings.",
+      "details": "Improved operational consistency and compliance through policy optimization."
     },
     {
       "name": "Project Nexus",
-      "description": "Reduced onboarding ramp time by 30 percent by optimizing training structure and operational readiness programs."
+      "impact": "Reduced onboarding ramp time by 30 percent.",
+      "details": "Optimized training structure and operational readiness programs."
     },
     {
       "name": "Global Centralized Advisor Pool Launch",
-      "description": "Helped launch a centralized global advisor model where advisors are pooled instead of assigned to individual teams. This system routes associate questions to the first available advisor globally, significantly improving response efficiency and advisor utilization. The system has remained active and operational for over two years."
+      "impact": "Improved response efficiency and advisor utilization globally.",
+      "details": "Helped launch a centralized global advisor model where associate questions are routed to the first available advisor instead of team-specific advisors. The system has remained operational for over two years."
     }
   ],
 
@@ -62,19 +73,13 @@
     "Operational Strategy",
     "Sprint Planning",
     "Backlog Prioritization",
-    "KPI & SLA Management",
+    "KPI and SLA Management",
     "Process Optimization",
     "SQL",
     "Power BI",
     "AWS Console Tools",
     "Lean Six Sigma Yellow Belt"
   ],
-
-  "education": {
-    "degree": "BSc Computer Science",
-    "university": "William Carey University",
-    "years": "2013–2016"
-  },
 
   "languages": [
     "English",
@@ -85,9 +90,9 @@
   ],
 
   "fun_facts": [
-    "Abhishek believes that the best operational leaders are the ones who can simplify complexity into repeatable processes.",
+    "Abhishek believes that the best operational leaders simplify complexity into repeatable processes.",
     "Abhishek enjoys turning chaotic workflows into structured systems that scale across large teams.",
-    "Abhishek often treats backlog management like solving a strategy puzzle — prioritizing impact over volume.",
+    "Abhishek treats backlog management like solving a strategy puzzle, prioritizing impact over volume.",
     "Abhishek believes strong teams are built through mentorship and clear operational frameworks."
   ]
 }

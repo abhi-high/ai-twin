@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import "./App.css";
-import knowledge from "./knowledge.json";
 
 function App() {
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [mode, setMode] = useState("chat");
 
-  const API_URL = "https://ai-twin-htep.onrender.com/chat";
+  // Backend API
+  const API_URL = "https://ai-twin-htep.onrender.com";
 
   const sendMessage = async (text) => {
 
@@ -21,35 +20,62 @@ function App() {
     setMessages(prev => [...prev, userMsg]);
     setInput("");
 
-    const res = await fetch(`${API_URL}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
+    try {
 
-    const data = await res.json();
+      const res = await fetch(`${API_URL}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message })
+      });
 
-    setMessages(prev => [
-      ...prev,
-      { role: "ai", content: data.reply }
-    ]);
+      const data = await res.json();
+
+      const aiMsg = {
+        role: "ai",
+        content: data.reply
+      };
+
+      setMessages(prev => [...prev, aiMsg]);
+
+    } catch (err) {
+
+      setMessages(prev => [
+        ...prev,
+        { role: "ai", content: "Error contacting AI server." }
+      ]);
+
+    }
+
   };
+
 
   const startInterview = async () => {
 
-    const res = await fetch(`${API_URL}/interview`, {
-      method: "POST"
-    });
+    try {
 
-    const data = await res.json();
+      const res = await fetch(`${API_URL}/interview`, {
+        method: "POST"
+      });
 
-    setMessages([
-      { role: "ai", content: "AI Interview Mode Started." },
-      { role: "ai", content: data.question }
-    ]);
+      const data = await res.json();
 
-    setMode("interview");
+      setMessages([
+        { role: "ai", content: "AI Interview Mode Started." },
+        { role: "ai", content: data.question }
+      ]);
+
+    } catch {
+
+      setMessages([
+        { role: "ai", content: "Unable to start interview." }
+      ]);
+
+    }
+
   };
+
 
   return (
 
@@ -64,10 +90,10 @@ function App() {
         />
 
         <h1>AI Twin — Abhishek Kalyan</h1>
-
         <p>Interactive AI Resume Assistant</p>
 
       </header>
+
 
       <div className="chat">
 
@@ -83,6 +109,7 @@ function App() {
         ))}
 
       </div>
+
 
       <div className="buttons">
 
@@ -108,12 +135,13 @@ function App() {
 
       </div>
 
+
       <div className="input">
 
         <input
           value={input}
           placeholder="Ask about Abhishek..."
-          onChange={e => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
         />
 
         <button onClick={() => sendMessage()}>

@@ -1,115 +1,119 @@
 import React, { useState } from "react";
 import "./App.css";
+import knowledge from "./knowledge.json";
 
 function App() {
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState("chat");
+
+  const API_URL = "https://ai-twin-htep.onrender.com/chat";
 
   const sendMessage = async (text) => {
 
-    const userText = text || input;
+    const message = text || input;
 
-    if (!userText.trim()) return;
+    if (!message) return;
 
-    const userMessage = { role: "user", content: userText };
+    const userMsg = { role: "user", content: message };
 
-    setMessages(prev => [...prev, userMessage]);
-
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
-    setLoading(true);
 
-    const response = await fetch("https://ai-twin-htep.onrender.com/chat", {
+    const res = await fetch(`${API_URL}/chat`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: userText })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
     });
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+    const data = await res.json();
 
-    let aiText = "";
+    setMessages(prev => [
+      ...prev,
+      { role: "ai", content: data.reply }
+    ]);
+  };
 
-    setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+  const startInterview = async () => {
 
-    while (true) {
+    const res = await fetch(`${API_URL}/interview`, {
+      method: "POST"
+    });
 
-      const { done, value } = await reader.read();
+    const data = await res.json();
 
-      if (done) break;
+    setMessages([
+      { role: "ai", content: "AI Interview Mode Started." },
+      { role: "ai", content: data.question }
+    ]);
 
-      const chunk = decoder.decode(value);
-
-      aiText += chunk;
-
-      setMessages(prev => {
-
-        const newMessages = [...prev];
-
-        newMessages[newMessages.length - 1] = {
-          role: "assistant",
-          content: aiText
-        };
-
-        return newMessages;
-      });
-
-    }
-
-    setLoading(false);
+    setMode("interview");
   };
 
   return (
 
-    <div className="app">
+    <div className="container">
 
-      <h1>AI Twin – Abhishek Kalyan</h1>
+      <header>
 
-      <div className="chat-box">
+        <img
+          src="https://i.imgur.com/8Km9tLL.png"
+          alt="profile"
+          className="profile"
+        />
 
-        {messages.map((msg, i) => (
+        <h1>AI Twin — Abhishek Kalyan</h1>
 
-          <div key={i} className={msg.role === "user" ? "user" : "ai"}>
+        <p>Interactive AI Resume Assistant</p>
 
-            {msg.content}
+      </header>
 
+      <div className="chat">
+
+        {messages.map((m, i) => (
+
+          <div
+            key={i}
+            className={m.role === "user" ? "user" : "ai"}
+          >
+            {m.content}
           </div>
 
         ))}
 
-        {loading && <div className="thinking">AI thinking...</div>}
-
       </div>
 
-      <div className="quick-buttons">
+      <div className="buttons">
 
-        <button onClick={() => sendMessage("Who is Abhishek Kalyan?")}>
+        <button onClick={() => sendMessage("who is abhishek")}>
           Who is Abhishek
         </button>
 
-        <button onClick={() => sendMessage("What projects has Abhishek worked on?")}>
+        <button onClick={() => sendMessage("projects")}>
           Projects
         </button>
 
-        <button onClick={() => sendMessage("Tell me about Abhishek leadership experience")}>
+        <button onClick={() => sendMessage("leadership")}>
           Leadership
         </button>
 
-        <button onClick={() => sendMessage("What are Abhishek achievements?")}>
+        <button onClick={() => sendMessage("achievements")}>
           Achievements
+        </button>
+
+        <button onClick={startInterview}>
+          Start AI Interview
         </button>
 
       </div>
 
-      <div className="input-area">
+      <div className="input">
 
         <input
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about Abhishek's experience..."
+          placeholder="Ask about Abhishek..."
+          onChange={e => setInput(e.target.value)}
         />
 
         <button onClick={() => sendMessage()}>
@@ -123,4 +127,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

@@ -7,7 +7,7 @@ function App() {
   const [input, setInput] = useState("");
 
   // Backend API
-  const API_URL = "https://ai-twin-htep.onrender.com";
+  const API_URL = "https://ai-twin-htep.onrender.com/chat";
 
   const sendMessage = async (text) => {
 
@@ -22,13 +22,13 @@ function App() {
 
     try {
 
-      const res = await fetch(`${API_URL}/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message })
-      });
+    const res = await fetch(`${API_URL}/chat`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ message })
+});
 
       const data = await res.json();
 
@@ -82,12 +82,11 @@ function App() {
     <div className="container">
 
       <header>
-
-        <img
-          src="https://i.imgur.com/8Km9tLL.png"
-          alt="profile"
-          className="profile"
-        />
+<img
+  src="/abhishek.jpg"
+  alt="Abhishek Kalyan"
+  className="profile"
+/>
 
         <h1>AI Twin — Abhishek Kalyan</h1>
         <p>Interactive AI Resume Assistant</p>

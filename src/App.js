@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 import heroImage from "./abhishek.jpg";
+import backgroundImage from "./background.jpg";
 
 const API_URL = "https://ai-twin-htep.onrender.com";
 
@@ -10,6 +11,7 @@ const [messages,setMessages] = useState([]);
 const [input,setInput] = useState("");
 const [typing,setTyping] = useState(false);
 const [voiceEnabled,setVoiceEnabled] = useState(false);
+const [showStats,setShowStats] = useState(false);
 
 const [stats,setStats] = useState({
 questions:0,
@@ -95,7 +97,6 @@ time:timestamp()
 
 setMessages(prev=>[...prev,userMsg]);
 setInput("");
-
 setTyping(true);
 
 try{
@@ -113,42 +114,42 @@ setTyping(false);
 const reply=data.reply;
 
 //////////////////////////////////////////////////////
-// STREAMING GPT STYLE TYPING (SAFE VERSION)
+// STREAMING AI RESPONSE
 //////////////////////////////////////////////////////
 
-let currentText = "";
+let currentText="";
 
-const aiMsg = {
-role: "ai",
-content: "",
-time: timestamp()
+const aiMsg={
+role:"ai",
+content:"",
+time:timestamp()
 };
 
-setMessages(prev => [...prev, aiMsg]);
+setMessages(prev=>[...prev,aiMsg]);
 
-let i = 0;
+let i=0;
 
-const streamInterval = setInterval(() => {
+const streamInterval=setInterval(()=>{
 
-currentText += reply[i];
+currentText+=reply[i];
 
-setMessages(prev => {
-const updated = [...prev];
-updated[updated.length - 1] = {
-...updated[updated.length - 1],
-content: currentText
+setMessages(prev=>{
+const updated=[...prev];
+updated[updated.length-1]={
+...updated[updated.length-1],
+content:currentText
 };
 return updated;
 });
 
 i++;
 
-if (i >= reply.length) {
+if(i>=reply.length){
 clearInterval(streamInterval);
 }
 
-}, 15);
-  
+},15);
+
 speak(reply);
 
 setStats(prev=>({
@@ -239,9 +240,12 @@ const sessionMinutes=Math.floor(
 
 return(
 
-<div className="app">
+<div
+className="page"
+style={{backgroundImage:`url(${backgroundImage})`}}
+>
 
-{/* HERO SECTION */}
+<div className="app">
 
 <div
 className="hero"
@@ -261,27 +265,20 @@ projects and leadership journey.
 
 </div>
 
-{/* PROFILE CARD */}
-
 <div className="profileCard">
 
 <h2>Abhishek Kalyan</h2>
 
-<p>SPS Associate Advisor – Amazon</p>
+<p>SPS Associate Advisor — Amazon</p>
 
 <p>
 Operations leader with 9+ years of experience improving
-customer support performance, scaling global teams and
-optimizing operational systems.
+customer support performance and operational systems.
 </p>
 
 </div>
 
-{/* CHAT CONTAINER */}
-
 <div className="chatContainer">
-
-{/* QUICK BUTTONS */}
 
 <div className="quickButtons">
 
@@ -296,8 +293,6 @@ optimizing operational systems.
 <button onClick={startInterview}>Start AI Interview</button>
 
 </div>
-
-{/* CHAT WINDOW */}
 
 <div className="chatBox">
 
@@ -327,8 +322,6 @@ AI is typing...
 
 </div>
 
-{/* INPUT BAR */}
-
 <div className="inputBar">
 
 <input
@@ -356,7 +349,14 @@ onClick={()=>setVoiceEnabled(!voiceEnabled)}
 
 </div>
 
-{/* ANALYTICS */}
+<button
+className="statsToggle"
+onClick={()=>setShowStats(!showStats)}
+>
+Recruiter Analytics
+</button>
+
+{showStats && (
 
 <div className="stats">
 
@@ -369,6 +369,10 @@ onClick={()=>setVoiceEnabled(!voiceEnabled)}
 <p>Session duration: {sessionMinutes} minutes</p>
 
 <p>Total messages: {messages.length}</p>
+
+</div>
+
+)}
 
 </div>
 

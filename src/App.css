@@ -1,7 +1,7 @@
 body{
 margin:0;
-font-family:Inter, sans-serif;
-background:#0f172a;
+font-family:Inter,sans-serif;
+background:#020617;
 color:white;
 }
 
@@ -11,48 +11,39 @@ margin:auto;
 }
 
 .hero{
-height:350px;
-background-image:url("/abhishek.jpg");
+height:380px;
 background-size:cover;
 background-position:center;
 position:relative;
 }
 
 .heroOverlay{
-background:rgba(0,0,0,0.6);
+background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.85));
 height:100%;
 display:flex;
 flex-direction:column;
 justify-content:center;
 align-items:center;
 text-align:center;
-  
-  .heroOverlay{
-background:linear-gradient(
-rgba(0,0,0,0.6),
-rgba(0,0,0,0.85)
-);
-height:100%;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-text-align:center;
-    
-}
 }
 
 .hero h1{
-font-size:40px;
+font-size:44px;
 margin:0;
 }
 
+.hero p{
+max-width:500px;
+opacity:0.8;
+}
+
 .chatContainer{
-margin-top:-60px;
-background:#1e293b;
-padding:25px;
-border-radius:12px;
-box-shadow:0 20px 40px rgba(0,0,0,0.4);
+margin-top:-70px;
+background:rgba(30,41,59,0.7);
+backdrop-filter:blur(12px);
+padding:30px;
+border-radius:14px;
+box-shadow:0 25px 50px rgba(0,0,0,0.6);
 }
 
 .quickButtons{
@@ -69,14 +60,19 @@ color:white;
 padding:10px 14px;
 border-radius:8px;
 cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+background:#1d4ed8;
 }
 
 .chatBox{
-background:#0f172a;
+background:#020617;
 border-radius:10px;
 padding:20px;
-min-height:250px;
-max-height:400px;
+min-height:280px;
+max-height:420px;
 overflow-y:auto;
 }
 
@@ -85,6 +81,7 @@ padding:12px;
 border-radius:10px;
 margin-bottom:10px;
 max-width:70%;
+position:relative;
 }
 
 .user{
@@ -104,7 +101,7 @@ margin-top:4px;
 }
 
 .typing{
-opacity:0.6;
+opacity:0.7;
 font-style:italic;
 }
 
@@ -116,7 +113,7 @@ margin-top:15px;
 
 input{
 flex:1;
-padding:10px;
+padding:12px;
 border-radius:8px;
 border:none;
 }
@@ -137,4 +134,11 @@ animation:pulse 1.5s infinite;
 0%{transform:scale(1)}
 50%{transform:scale(1.1)}
 100%{transform:scale(1)}
+}
+
+.stats{
+margin-top:30px;
+background:#0f172a;
+padding:20px;
+border-radius:12px;
 }

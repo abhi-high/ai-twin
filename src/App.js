@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 import heroImage from "./abhishek.jpg";
 
-
 const API_URL = "https://ai-twin-htep.onrender.com";
 
 export default function App() {
@@ -14,16 +13,25 @@ const [voiceEnabled,setVoiceEnabled] = useState(false);
 
 const [stats,setStats] = useState({
 questions:0,
-interview:false
+interview:false,
+sessionStart:Date.now()
 });
 
 const chatEndRef = useRef(null);
+
+//////////////////////////////////////////////////////
+// AUTO SCROLL
+//////////////////////////////////////////////////////
 
 useEffect(()=>{
 chatEndRef.current?.scrollIntoView({behavior:"smooth"});
 },[messages]);
 
-  useEffect(()=>{
+//////////////////////////////////////////////////////
+// LOAD CHAT MEMORY
+//////////////////////////////////////////////////////
+
+useEffect(()=>{
 
 const saved=localStorage.getItem("ai_twin_chat");
 
@@ -33,7 +41,11 @@ setMessages(JSON.parse(saved));
 
 },[]);
 
-  useEffect(()=>{
+//////////////////////////////////////////////////////
+// SAVE CHAT MEMORY
+//////////////////////////////////////////////////////
+
+useEffect(()=>{
 
 localStorage.setItem(
 "ai_twin_chat",
@@ -42,9 +54,17 @@ JSON.stringify(messages)
 
 },[messages]);
 
+//////////////////////////////////////////////////////
+// TIMESTAMP
+//////////////////////////////////////////////////////
+
 function timestamp(){
 return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
+
+//////////////////////////////////////////////////////
+// TEXT TO SPEECH
+//////////////////////////////////////////////////////
 
 function speak(text){
 
@@ -58,6 +78,10 @@ speech.pitch=1;
 window.speechSynthesis.speak(speech);
 
 }
+
+//////////////////////////////////////////////////////
+// SEND MESSAGE
+//////////////////////////////////////////////////////
 
 async function sendMessage(text=input){
 
@@ -74,6 +98,8 @@ setInput("");
 
 setTyping(true);
 
+try{
+
 const res = await fetch(API_URL+"/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
@@ -86,22 +112,61 @@ setTyping(false);
 
 const reply=data.reply;
 
+//////////////////////////////////////////////////////
+// STREAMING GPT STYLE TYPING
+//////////////////////////////////////////////////////
+
+let currentText="";
+
 const aiMsg={
 role:"ai",
-content:reply,
+content:"",
 time:timestamp()
 };
 
 setMessages(prev=>[...prev,aiMsg]);
 
-speak(reply);
+for(let i=0;i<reply.length;i++){
 
-setStats({
-...stats,
-questions:stats.questions+1
+await new Promise(r=>setTimeout(r,15));
+
+currentText+=reply[i];
+
+setMessages(prev=>{
+const updated=[...prev];
+updated[updated.length-1].content=currentText;
+return updated;
 });
 
 }
+
+speak(reply);
+
+setStats(prev=>({
+...prev,
+questions:prev.questions+1
+}));
+
+}catch(err){
+
+setTyping(false);
+
+setMessages(prev=>[
+...prev,
+{
+role:"ai",
+content:"AI server error.",
+time:timestamp()
+}
+]);
+
+}
+
+}
+
+//////////////////////////////////////////////////////
+// AI INTERVIEW MODE
+//////////////////////////////////////////////////////
 
 async function startInterview(){
 
@@ -118,12 +183,16 @@ setMessages(prev=>[...prev,aiMsg]);
 
 speak(data.question);
 
-setStats({
-...stats,
+setStats(prev=>({
+...prev,
 interview:true
-});
+}));
 
 }
+
+//////////////////////////////////////////////////////
+// VOICE INPUT
+//////////////////////////////////////////////////////
 
 function startVoice(){
 
@@ -147,9 +216,23 @@ recognition.start();
 
 }
 
+//////////////////////////////////////////////////////
+// SESSION ANALYTICS
+//////////////////////////////////////////////////////
+
+const sessionMinutes=Math.floor(
+(Date.now()-stats.sessionStart)/60000
+);
+
+//////////////////////////////////////////////////////
+// UI
+//////////////////////////////////////////////////////
+
 return(
 
 <div className="app">
+
+{/* HERO SECTION */}
 
 <div
 className="hero"
@@ -169,7 +252,9 @@ projects and leadership journey.
 
 </div>
 
-  <div className="profileCard">
+{/* PROFILE CARD */}
+
+<div className="profileCard">
 
 <h2>Abhishek Kalyan</h2>
 
@@ -183,7 +268,11 @@ optimizing operational systems.
 
 </div>
 
+{/* CHAT CONTAINER */}
+
 <div className="chatContainer">
+
+{/* QUICK BUTTONS */}
 
 <div className="quickButtons">
 
@@ -198,6 +287,8 @@ optimizing operational systems.
 <button onClick={startInterview}>Start AI Interview</button>
 
 </div>
+
+{/* CHAT WINDOW */}
 
 <div className="chatBox">
 
@@ -227,6 +318,8 @@ AI is typing...
 
 </div>
 
+{/* INPUT BAR */}
+
 <div className="inputBar">
 
 <input
@@ -254,6 +347,8 @@ onClick={()=>setVoiceEnabled(!voiceEnabled)}
 
 </div>
 
+{/* ANALYTICS */}
+
 <div className="stats">
 
 <h3>Recruiter Interaction Stats</h3>
@@ -261,6 +356,10 @@ onClick={()=>setVoiceEnabled(!voiceEnabled)}
 <p>Questions asked: {stats.questions}</p>
 
 <p>Interview Mode: {stats.interview ? "Active":"Off"}</p>
+
+<p>Session duration: {sessionMinutes} minutes</p>
+
+<p>Total messages: {messages.length}</p>
 
 </div>
 

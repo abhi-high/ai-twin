@@ -149,6 +149,20 @@ projects and leadership journey.
 
 </div>
 
+  <div className="profileCard">
+
+<h2>Abhishek Kalyan</h2>
+
+<p>SPS Associate Advisor – Amazon</p>
+
+<p>
+Operations leader with 9+ years of experience improving
+customer support performance, scaling global teams and
+optimizing operational systems.
+</p>
+
+</div>
+
 <div className="chatContainer">
 
 <div className="quickButtons">

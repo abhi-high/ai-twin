@@ -13,8 +13,11 @@ margin:auto;
 .hero{
 height:380px;
 background-size:cover;
-background-position:center;
+background-position:top center;
+background-repeat:no-repeat;
 position:relative;
+border-radius:12px 12px 0 0;
+overflow:hidden;
 }
 
 .heroOverlay{

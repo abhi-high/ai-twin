@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 import heroImage from "./abhishek.jpg";
 
+
 const API_URL = "https://ai-twin-htep.onrender.com";
 
 export default function App() {
@@ -20,6 +21,25 @@ const chatEndRef = useRef(null);
 
 useEffect(()=>{
 chatEndRef.current?.scrollIntoView({behavior:"smooth"});
+},[messages]);
+
+  useEffect(()=>{
+
+const saved=localStorage.getItem("ai_twin_chat");
+
+if(saved){
+setMessages(JSON.parse(saved));
+}
+
+},[]);
+
+  useEffect(()=>{
+
+localStorage.setItem(
+"ai_twin_chat",
+JSON.stringify(messages)
+);
+
 },[messages]);
 
 function timestamp(){

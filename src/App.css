@@ -12,8 +12,8 @@ margin:auto;
 
 .hero{
 height:350px;
-background-image:url("%PUBLIC_URL%/abhishek.jpg");
-  background-size:cover;
+background-image:url("/abhishek.jpg");
+background-size:cover;
 background-position:center;
 position:relative;
 }

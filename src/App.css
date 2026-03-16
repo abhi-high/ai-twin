@@ -2,46 +2,26 @@ body{
 margin:0;
 font-family:Inter,sans-serif;
 color:white;
+}
 
-background-image:url("./background.jpg");
+.page{
+min-height:100vh;
 background-size:cover;
 background-position:center;
-background-attachment:fixed;
-
-}
-
-.profileCard{
-background:#0f172a;
-padding:25px;
-border-radius:12px;
-margin-top:20px;
-box-shadow:0 10px 30px rgba(0,0,0,0.4);
-}
-
-.profileCard h2{
-margin:0;
-font-size:26px;
-}
-
-.profileCard p{
-opacity:0.85;
-margin-top:8px;
+padding:40px;
 }
 
 .app{
 max-width:1100px;
 margin:auto;
-padding:40px;
-
-background:rgba(2,6,23,0.75);
+background:rgba(2,6,23,0.8);
 backdrop-filter:blur(10px);
-
-border-radius:14px;
-margin-top:40px;
+padding:40px;
+border-radius:16px;
 }
 
 .hero{
-height:220px;
+height:200px;
 background-size:cover;
 background-position:center;
 border-radius:12px;
@@ -52,30 +32,31 @@ margin-bottom:20px;
 }
 
 .heroOverlay{
-background:linear-gradient(
-rgba(0,0,0,0.2),
-rgba(0,0,0,0.75)
-);
+background:rgba(0,0,0,0.6);
 padding:20px;
 border-radius:10px;
-max-width:600px;
 }
 
 .hero h1{
-font-size:44px;
+font-size:36px;
 margin:0;
 }
 
 .hero p{
-max-width:500px;
 opacity:0.8;
 }
 
+.profileCard{
+background:#0f172a;
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+}
+
 .chatContainer{
-margin-top:-70px;
 background:rgba(30,41,59,0.7);
 backdrop-filter:blur(12px);
-padding:30px;
+padding:25px;
 border-radius:14px;
 box-shadow:0 25px 50px rgba(0,0,0,0.6);
 }
@@ -94,7 +75,6 @@ color:white;
 padding:10px 14px;
 border-radius:8px;
 cursor:pointer;
-transition:0.2s;
 }
 
 button:hover{
@@ -105,7 +85,7 @@ background:#1d4ed8;
 background:#020617;
 border-radius:10px;
 padding:20px;
-min-height:280px;
+min-height:260px;
 max-height:420px;
 overflow-y:auto;
 }
@@ -115,7 +95,6 @@ padding:12px;
 border-radius:10px;
 margin-bottom:10px;
 max-width:70%;
-position:relative;
 }
 
 .user{
@@ -170,8 +149,12 @@ animation:pulse 1.5s infinite;
 100%{transform:scale(1)}
 }
 
+.statsToggle{
+margin-top:20px;
+}
+
 .stats{
-margin-top:30px;
+margin-top:20px;
 background:#0f172a;
 padding:20px;
 border-radius:12px;

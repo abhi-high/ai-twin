@@ -113,33 +113,42 @@ setTyping(false);
 const reply=data.reply;
 
 //////////////////////////////////////////////////////
-// STREAMING GPT STYLE TYPING
+// STREAMING GPT STYLE TYPING (SAFE VERSION)
 //////////////////////////////////////////////////////
 
-let currentText="";
+let currentText = "";
 
-const aiMsg={
-role:"ai",
-content:"",
-time:timestamp()
+const aiMsg = {
+role: "ai",
+content: "",
+time: timestamp()
 };
 
-setMessages(prev=>[...prev,aiMsg]);
+setMessages(prev => [...prev, aiMsg]);
 
-for(let i=0;i<reply.length;i++){
+let i = 0;
 
-await new Promise(r=>setTimeout(r,15));
+const streamInterval = setInterval(() => {
 
-currentText+=reply[i];
+currentText += reply[i];
 
-setMessages(prev=>{
-const updated=[...prev];
-updated[updated.length-1].content=currentText;
+setMessages(prev => {
+const updated = [...prev];
+updated[updated.length - 1] = {
+...updated[updated.length - 1],
+content: currentText
+};
 return updated;
 });
 
+i++;
+
+if (i >= reply.length) {
+clearInterval(streamInterval);
 }
 
+}, 15);
+  
 speak(reply);
 
 setStats(prev=>({

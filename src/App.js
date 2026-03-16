@@ -1,213 +1,199 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 const API_URL = "https://ai-twin-htep.onrender.com";
 
 export default function App() {
 
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [stats, setStats] = useState({ questions: 0, interviewMode:false });
+const [messages,setMessages] = useState(
+  JSON.parse(localStorage.getItem("chatHistory")) || []
+);
 
-  function speak(text){
+const [input,setInput] = useState("");
+const [voiceEnabled,setVoiceEnabled] = useState(false);
+const [loading,setLoading] = useState(false);
 
-    if(!voiceEnabled) return;
+const chatEndRef = useRef(null);
 
-    const speech = new SpeechSynthesisUtterance(text);
+useEffect(()=>{
+  localStorage.setItem("chatHistory",JSON.stringify(messages));
+  chatEndRef.current?.scrollIntoView({behavior:"smooth"});
+},[messages]);
 
-    speech.rate = 1;
-    speech.pitch = 1;
+function speak(text){
 
-    window.speechSynthesis.speak(speech);
+if(!voiceEnabled) return;
 
-  }
+const speech = new SpeechSynthesisUtterance(text);
+speech.rate = 1;
+speech.pitch = 1;
 
-  async function sendMessage(messageText = input){
+window.speechSynthesis.speak(speech);
 
-    if(!messageText) return;
+}
 
-    const newMessages = [
-      ...messages,
-      {role:"user", content:messageText}
-    ];
+async function sendMessage(messageText=input){
 
-    setMessages(newMessages);
-    setInput("");
+if(!messageText) return;
 
-    const res = await fetch(API_URL + "/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:messageText})
-    });
+const timestamp = new Date().toLocaleTimeString();
 
-    const data = await res.json();
+const newMessages=[
+...messages,
+{role:"user",content:messageText,time:timestamp}
+];
 
-    const reply = data.reply;
+setMessages(newMessages);
+setInput("");
+setLoading(true);
 
-    const updated = [
-      ...newMessages,
-      {role:"assistant", content:reply}
-    ];
+const res = await fetch(API_URL+"/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:messageText})
+});
 
-    setMessages(updated);
+const data = await res.json();
 
-    speak(reply);
+const replyTime = new Date().toLocaleTimeString();
 
-    setStats({
-      ...stats,
-      questions:stats.questions + 1
-    });
+const updated=[
+...newMessages,
+{role:"assistant",content:data.reply,time:replyTime}
+];
 
-  }
+setMessages(updated);
+setLoading(false);
 
-  async function startInterview(){
+speak(data.reply);
 
-    const res = await fetch(API_URL + "/interview",{method:"POST"});
-    const data = await res.json();
+}
 
-    const question = data.question;
+function startVoiceInput(){
 
-    const updated = [
-      ...messages,
-      {role:"assistant", content:question}
-    ];
+const SpeechRecognition =
+window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    setMessages(updated);
+if(!SpeechRecognition){
+alert("Voice input not supported");
+return;
+}
 
-    speak(question);
+const recognition = new SpeechRecognition();
 
-    setStats({
-      ...stats,
-      interviewMode:true
-    });
+recognition.lang="en-US";
 
-  }
+recognition.onresult=(event)=>{
+const transcript = event.results[0][0].transcript;
+sendMessage(transcript);
+};
 
-  function startVoiceInput(){
+recognition.start();
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+}
 
-    if(!SpeechRecognition){
-      alert("Voice input not supported in this browser");
-      return;
-    }
+return(
 
-    const recognition = new SpeechRecognition();
+<div className="app">
 
-    recognition.lang = "en-US";
+<div className="hero">
 
-    recognition.onresult = (event)=>{
+<div className="heroOverlay">
 
-      const transcript = event.results[0][0].transcript;
+<h1>Meet My AI Twin</h1>
 
-      sendMessage(transcript);
+<p>
+Recruiters can interact with an AI version of my resume,
+projects and leadership experience.
+</p>
 
-    };
+</div>
 
-    recognition.start();
+</div>
 
-  }
+<div className="chatContainer">
 
-  return(
+<div className="quickButtons">
 
-  <div className="app">
+<button onClick={()=>sendMessage("Who is Abhishek Kalyan")}>
+Who is Abhishek
+</button>
 
-    <header className="header">
+<button onClick={()=>sendMessage("Tell me about his projects")}>
+Projects
+</button>
 
-      <img src="/abhishek.jpg" alt="profile"/>
+<button onClick={()=>sendMessage("Leadership experience")}>
+Leadership
+</button>
 
-      <div>
-        <h1>Abhishek Kalyan</h1>
-        <p>SPS Associate Advisor</p>
-        <p>Amazon Development Center Pvt Ltd</p>
+<button onClick={()=>sendMessage("Achievements")}>
+Achievements
+</button>
 
-        <a
-          href="https://www.linkedin.com"
-          target="_blank"
-          rel="noreferrer"
-        >
-          LinkedIn
-        </a>
-      </div>
+<button onClick={()=>sendMessage("Start interview")}>
+AI Interview
+</button>
 
-    </header>
+</div>
 
-    <div className="quickButtons">
+<div className="chatBox">
 
-      <button onClick={()=>sendMessage("Who is Abhishek Kalyan?")}>
-        Who is Abhishek
-      </button>
+{messages.map((m,i)=>(
 
-      <button onClick={()=>sendMessage("Tell me about his projects")}>
-        Projects
-      </button>
+<div key={i}
+className={m.role==="user" ? "bubble user":"bubble ai"}>
 
-      <button onClick={()=>sendMessage("What leadership experience does he have?")}>
-        Leadership
-      </button>
+<div>{m.content}</div>
 
-      <button onClick={()=>sendMessage("What are his achievements?")}>
-        Achievements
-      </button>
+<span className="time">{m.time}</span>
 
-      <button onClick={startInterview}>
-        Start AI Interview
-      </button>
+</div>
 
-    </div>
+))}
 
-    <div className="chat">
+{loading && (
+<div className="typing">
+AI is thinking...
+</div>
+)}
 
-      {messages.map((m,i)=>(
-        <div
-          key={i}
-          className={m.role === "user" ? "bubble user":"bubble ai"}
-        >
-          {m.content}
-        </div>
-      ))}
+<div ref={chatEndRef}></div>
 
-    </div>
+</div>
 
-    <div className="inputBar">
+<div className="inputBar">
 
-      <input
-        value={input}
-        onChange={(e)=>setInput(e.target.value)}
-        placeholder="Ask about Abhishek..."
-      />
+<input
+value={input}
+onChange={(e)=>setInput(e.target.value)}
+placeholder="Ask the AI about Abhishek..."
+/>
 
-      <button onClick={()=>sendMessage()}>
-        Send
-      </button>
+<button onClick={()=>sendMessage()}>
+Send
+</button>
 
-      <button onClick={startVoiceInput}>
-        🎤
-      </button>
+<button
+className="micButton"
+onClick={startVoiceInput}
+>
+🎤
+</button>
 
-      <button
-        className={voiceEnabled ? "voiceOn":"voiceOff"}
-        onClick={()=>setVoiceEnabled(!voiceEnabled)}
-      >
-        🔊
-      </button>
+<button
+className={voiceEnabled?"voiceOn":"voiceOff"}
+onClick={()=>setVoiceEnabled(!voiceEnabled)}
+>
+🔊
+</button>
 
-    </div>
+</div>
 
-    <div className="stats">
+</div>
 
-      <h3>Recruiter Interaction Stats</h3>
+</div>
 
-      <p>Questions asked: {stats.questions}</p>
-
-      <p>Interview Mode: {stats.interviewMode ? "Active":"Off"}</p>
-
-    </div>
-
-  </div>
-
-  );
+);
 
 }

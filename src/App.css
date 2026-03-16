@@ -6,6 +6,19 @@ color:white;
 
 .page{
 min-height:100vh;
+
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+background-attachment:fixed;
+
+display:flex;
+justify-content:center;
+padding:40px;
+}
+
+.page{
+min-height:100vh;
 background-size:cover;
 background-position:center;
 padding:40px;
@@ -21,20 +34,28 @@ border-radius:16px;
 }
 
 .hero{
-height:200px;
-background-size:cover;
-background-position:center;
+height:280px;
+
+background-size:contain;
+background-position:center top;
+background-repeat:no-repeat;
+
 border-radius:12px;
+
 display:flex;
-align-items:center;
-padding:30px;
+align-items:flex-end;
+
+padding:20px;
 margin-bottom:20px;
+
+background-color:#020617;
 }
 
 .heroOverlay{
-background:rgba(0,0,0,0.6);
-padding:20px;
+background:rgba(0,0,0,0.55);
+padding:16px 20px;
 border-radius:10px;
+max-width:420px;
 }
 
 .hero h1{

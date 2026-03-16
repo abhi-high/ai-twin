@@ -1,98 +1,126 @@
 body{
-  margin:0;
-  font-family: Inter, sans-serif;
-  background:#0f172a;
-  color:white;
+margin:0;
+font-family:Inter, sans-serif;
+background:#0f172a;
+color:white;
 }
 
 .app{
-  max-width:900px;
-  margin:auto;
-  padding:20px;
+max-width:1200px;
+margin:auto;
 }
 
-.header{
-  display:flex;
-  align-items:center;
-  gap:15px;
-  background:#1e293b;
-  padding:20px;
-  border-radius:12px;
+.hero{
+height:350px;
+background-image:url("/abhishek.jpg");
+background-size:cover;
+background-position:center;
+position:relative;
 }
 
-.header img{
-  width:80px;
-  border-radius:50%;
+.heroOverlay{
+background:rgba(0,0,0,0.6);
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
 }
 
-.header h1{
-  margin:0;
+.hero h1{
+font-size:40px;
+margin:0;
+}
+
+.chatContainer{
+margin-top:-60px;
+background:#1e293b;
+padding:25px;
+border-radius:12px;
+box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
 
 .quickButtons{
-  margin-top:20px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:20px;
 }
 
 button{
-  background:#2563eb;
-  border:none;
-  padding:10px 14px;
-  border-radius:6px;
-  color:white;
-  cursor:pointer;
+background:#2563eb;
+border:none;
+color:white;
+padding:10px 14px;
+border-radius:8px;
+cursor:pointer;
 }
 
-.chat{
-  margin-top:20px;
-  background:#1e293b;
-  padding:20px;
-  border-radius:12px;
-  min-height:250px;
+.chatBox{
+background:#0f172a;
+border-radius:10px;
+padding:20px;
+min-height:250px;
+max-height:400px;
+overflow-y:auto;
 }
 
 .bubble{
-  padding:12px;
-  margin-bottom:10px;
-  border-radius:8px;
-  max-width:70%;
+padding:12px;
+border-radius:10px;
+margin-bottom:10px;
+max-width:70%;
 }
 
 .user{
-  background:#2563eb;
-  margin-left:auto;
+background:#2563eb;
+margin-left:auto;
 }
 
 .ai{
-  background:#334155;
+background:#334155;
+}
+
+.time{
+font-size:11px;
+opacity:0.6;
+display:block;
+margin-top:4px;
+}
+
+.typing{
+opacity:0.6;
+font-style:italic;
 }
 
 .inputBar{
-  margin-top:15px;
-  display:flex;
-  gap:10px;
+display:flex;
+gap:10px;
+margin-top:15px;
 }
 
 input{
-  flex:1;
-  padding:10px;
-  border-radius:6px;
-  border:none;
+flex:1;
+padding:10px;
+border-radius:8px;
+border:none;
 }
 
 .voiceOn{
-  background:#22c55e;
+background:#22c55e;
 }
 
 .voiceOff{
-  background:#64748b;
+background:#64748b;
 }
 
-.stats{
-  margin-top:20px;
-  background:#1e293b;
-  padding:15px;
-  border-radius:12px;
+.micButton{
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(1)}
+50%{transform:scale(1.1)}
+100%{transform:scale(1)}
 }

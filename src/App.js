@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import "./App.css";
 
 const API_URL = "https://ai-twin-htep.onrender.com";
@@ -9,8 +9,6 @@ export default function App() {
   const [input, setInput] = useState("");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [stats, setStats] = useState({ questions: 0, interviewMode:false });
-
-  const recognitionRef = useRef(null);
 
   function speak(text){
 
